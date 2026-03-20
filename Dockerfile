@@ -1,20 +1,19 @@
 FROM python:3.10-slim
 
-# Passo 1: Instala os pacotes básicos
-RUN apt-get update && apt-get install -y wget gnupg curl
+# Passo 1: Atualiza o sistema e instala a ferramenta de download
+RUN apt-get update && apt-get install -y wget
 
-# Passo 2: Baixa a chave de segurança do Google e instala o Chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
+# Passo 2: Baixa o instalador oficial do Chrome direto do Google e instala sem burocracia
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && apt-get install -y ./google-chrome-stable_current_amd64.deb \
+    && rm google-chrome-stable_current_amd64.deb \
     && rm -rf /var/lib/apt/lists/*
 
 # Passo 3: Copia os arquivos da AION para a nuvem
 WORKDIR /app
 COPY . /app
 
-# Passo 4: Instala o Flask
+# Passo 4: Instala o Flask e as dependências
 RUN pip install -r requirements.txt
 
 # Passo 5: Liga o motor
