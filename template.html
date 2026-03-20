@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AION — Template Tecnológico</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  background: #060608;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 64px;
+  gap: 24px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.page-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #333;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* ═══ CANVAS WRAPPER ═══ */
+.canvas-wrap {
+  width: min(540px, 90vw);
+  aspect-ratio: 1;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ═══ O POST: 1080×1080 → escala 50% ═══ */
+.post {
+  width: 1080px;
+  height: 1080px;
+  transform-origin: top left;
+  transform: scale(0.5);
+  position: relative;
+  background: #07080d;
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ── CAMADAS DE FUNDO ── */
+
+/* grade de pontos */
+.bg-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(99,91,255,0.18) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* linhas de circuito SVG embutido */
+.bg-circuit {
+  position: absolute; inset: 0;
+  opacity: 0.22;
+}
+
+/* vinheta nas bordas */
+.bg-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, #07080d 100%);
+}
+
+/* glow central roxo */
+.bg-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(99,91,255,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+/* barra lateral esquerda — linha de tensão */
+.side-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, transparent 0%, #635bff 30%, #00e5c0 70%, transparent 100%);
+}
+
+/* barra topo fina */
+.top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #635bff 40%, #00e5c0 60%, transparent);
+}
+
+/* ── CANTO SUPERIOR ── */
+.corner-tl {
+  position: absolute;
+  top: 48px; left: 28px;
+  width: 60px; height: 60px;
+  border-top: 1px solid rgba(99,91,255,0.5);
+  border-left: 1px solid rgba(99,91,255,0.5);
+}
+.corner-br {
+  position: absolute;
+  bottom: 104px; right: 44px;
+  width: 48px; height: 48px;
+  border-bottom: 1px solid rgba(0,229,192,0.35);
+  border-right: 1px solid rgba(0,229,192,0.35);
+}
+
+/* ── LOGO ── */
+.post-logo {
+  position: absolute;
+  top: 54px; left: 56px;
+  display: flex; align-items: center; gap: 14px;
+}
+.logo-mark {
+  width: 48px; height: 48px;
+  background: #635bff;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: white; letter-spacing: 1px;
+  position: relative;
+}
+.logo-text-wrap { display: flex; flex-direction: column; gap: 1px; }
+.logo-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; color: #f0f0ff; letter-spacing: 3px;
+  line-height: 1;
+}
+.logo-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: #635bff; letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── BADGE STATUS ── */
+.status-badge {
+  position: absolute;
+  top: 62px; right: 52px;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(0,229,192,0.08);
+  border: 1px solid rgba(0,229,192,0.25);
+  border-radius: 4px;
+  padding: 6px 14px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  background: #00e5c0;
+  border-radius: 50%;
+}
+.status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: #00e5c0; letter-spacing: 1px;
+}
+
+/* ── NÚMERO FANTASMA ── */
+.ghost-num {
+  position: absolute;
+  right: 36px; top: 140px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 320px; line-height: 1;
+  color: rgba(99,91,255,0.04);
+  user-select: none; pointer-events: none;
+  letter-spacing: -8px;
+}
+
+/* ── LINHA DIVISÓRIA ── */
+.divider-line {
+  position: absolute;
+  top: 148px; left: 56px; right: 56px;
+  height: 1px;
+  background: linear-gradient(90deg, #635bff, rgba(99,91,255,0.1) 60%, transparent);
+}
+
+/* ── ÁREA DE CONTEÚDO ── */
+.post-body {
+  position: absolute;
+  top: 190px; left: 56px; right: 56px;
+}
+
+/* tag de categoria */
+.category-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(99,91,255,0.12);
+  border: 1px solid rgba(99,91,255,0.3);
+  border-radius: 3px;
+  padding: 6px 14px;
+  margin-bottom: 48px;
+}
+.category-tag span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; color: #9d96ff; letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.category-tag::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: #635bff;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  display: block;
+}
+
+/* FRASE PRINCIPAL */
+.post-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 118px; line-height: 0.95;
+  color: #f0f0ff;
+  letter-spacing: 2px;
+  margin-bottom: 52px;
+}
+.post-headline .accent { color: #635bff; }
+.post-headline .accent2 { color: #00e5c0; }
+
+/* subtexto */
+.post-subtext {
+  font-size: 28px; font-weight: 300;
+  color: rgba(200,200,230,0.55);
+  line-height: 1.55;
+  max-width: 880px;
+  border-left: 2px solid rgba(99,91,255,0.4);
+  padding-left: 24px;
+}
+
+/* ── BARRA DE DADOS TÉCNICOS ── */
+.data-strip {
+  position: absolute;
+  bottom: 96px; left: 56px; right: 56px;
+  display: flex; align-items: center; gap: 0;
+}
+.data-item {
+  display: flex; flex-direction: column; gap: 4px;
+  flex: 1;
+  padding: 0 24px;
+  border-left: 1px solid rgba(255,255,255,0.07);
+}
+.data-item:first-child { padding-left: 0; border-left: none; }
+.data-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: #444; letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.data-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; color: #635bff; font-weight: 700;
+}
+
+/* ── RODAPÉ ── */
+.post-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 72px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 56px;
+}
+.footer-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; color: rgba(200,200,230,0.25); letter-spacing: 1px;
+}
+.footer-handle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; color: rgba(99,91,255,0.6); letter-spacing: 2px;
+}
+
+/* ═══ PAINEL DE CONTROLE ═══ */
+.panel {
+  width: min(540px, 90vw);
+  background: #0e0f18;
+  border: 1px solid rgba(99,91,255,0.15);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.panel-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-header span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: #444; letter-spacing: 2px; text-transform: uppercase;
+}
+.panel-dot { width: 6px; height: 6px; border-radius: 50%; background: #635bff; }
+.panel-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: #444; letter-spacing: 2px;
+  text-transform: uppercase; display: block; margin-bottom: 5px;
+}
+textarea, input[type="text"] {
+  width: 100%;
+  background: #07080d;
+  border: 1px solid rgba(99,91,255,0.15);
+  border-radius: 6px;
+  color: #c8c8e6;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 10px 12px;
+  resize: vertical; outline: none;
+  transition: border-color 0.2s;
+}
+textarea:focus, input:focus { border-color: #635bff; }
+textarea::placeholder, input::placeholder { color: #2a2a3a; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+.btn-run {
+  width: 100%;
+  background: #635bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; font-size: 12px;
+  letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-run:hover { background: #7b75ff; }
+
+/* ── VARIANTES ── */
+.variants-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.var-btn {
+  background: #0e0f18;
+  border: 1px solid rgba(99,91,255,0.2);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: #635bff;
+  letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.15s;
+}
+.var-btn:hover, .var-btn.active {
+  background: rgba(99,91,255,0.15);
+  border-color: #635bff;
+}
+
+/* ── JSON OUTPUT ── */
+.json-panel {
+  width: min(540px, 90vw);
+  background: #0e0f18;
+  border: 1px solid rgba(0,229,192,0.12);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.json-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.json-header span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: #444; letter-spacing: 2px; text-transform: uppercase;
+}
+.btn-copy {
+  background: transparent;
+  border: 1px solid rgba(0,229,192,0.25);
+  border-radius: 5px;
+  padding: 5px 12px;
+  color: #00e5c0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-copy:hover { background: rgba(0,229,192,0.08); }
+pre {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; line-height: 1.8;
+  color: #555; white-space: pre-wrap; word-break: break-all;
+  max-height: 240px; overflow-y: auto;
+}
+pre .k { color: #9d96ff; }
+pre .v { color: #00e5c0; }
+pre .s { color: #f0a500; }
+</style>
+</head>
+<body>
+
+<div class="page-label">// AION — Template Sistema · Preview 1080×1080</div>
+
+<!-- ══ POST ══ -->
+<div class="canvas-wrap">
+<div class="post" id="post">
+
+  <!-- FUNDO -->
+  <div class="bg-dots"></div>
+  <svg class="bg-circuit" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+    <!-- linhas horizontais de circuito -->
+    <line x1="0" y1="200" x2="320" y2="200" stroke="#635bff" stroke-width="1"/>
+    <line x1="320" y1="200" x2="320" y2="260" stroke="#635bff" stroke-width="1"/>
+    <circle cx="320" cy="200" r="4" fill="#635bff"/>
+    <circle cx="320" cy="260" r="4" fill="none" stroke="#635bff" stroke-width="1"/>
+
+    <line x1="0" y1="400" x2="180" y2="400" stroke="#635bff" stroke-width="0.5"/>
+    <line x1="180" y1="400" x2="180" y2="340" stroke="#635bff" stroke-width="0.5"/>
+    <circle cx="180" cy="400" r="3" fill="none" stroke="#635bff" stroke-width="1"/>
+
+    <line x1="1080" y1="300" x2="760" y2="300" stroke="#00e5c0" stroke-width="1"/>
+    <line x1="760" y1="300" x2="760" y2="380" stroke="#00e5c0" stroke-width="1"/>
+    <circle cx="760" cy="300" r="4" fill="#00e5c0"/>
+
+    <line x1="1080" y1="500" x2="820" y2="500" stroke="#00e5c0" stroke-width="0.5"/>
+    <circle cx="820" cy="500" r="3" fill="none" stroke="#00e5c0" stroke-width="1"/>
+
+    <line x1="200" y1="1080" x2="200" y2="820" stroke="#635bff" stroke-width="0.5"/>
+    <line x1="200" y1="820" x2="280" y2="820" stroke="#635bff" stroke-width="0.5"/>
+    <circle cx="200" cy="820" r="3" fill="none" stroke="#635bff" stroke-width="1"/>
+
+    <line x1="600" y1="1080" x2="600" y2="900" stroke="#00e5c0" stroke-width="0.8"/>
+    <circle cx="600" cy="900" r="4" fill="none" stroke="#00e5c0" stroke-width="1"/>
+
+    <line x1="900" y1="1080" x2="900" y2="750" stroke="#635bff" stroke-width="0.5"/>
+    <line x1="900" y1="750" x2="840" y2="750" stroke="#635bff" stroke-width="0.5"/>
+    <circle cx="900" cy="750" r="3" fill="none" stroke="#635bff" stroke-width="1"/>
+
+    <!-- cruzes decorativas -->
+    <line x1="440" y1="136" x2="460" y2="136" stroke="#635bff" stroke-width="0.8"/>
+    <line x1="450" y1="126" x2="450" y2="146" stroke="#635bff" stroke-width="0.8"/>
+    <line x1="840" y1="640" x2="860" y2="640" stroke="#00e5c0" stroke-width="0.8"/>
+    <line x1="850" y1="630" x2="850" y2="650" stroke="#00e5c0" stroke-width="0.8"/>
+    <line x1="140" y1="680" x2="160" y2="680" stroke="#635bff" stroke-width="0.5"/>
+    <line x1="150" y1="670" x2="150" y2="690" stroke="#635bff" stroke-width="0.5"/>
+  </svg>
+  <div class="bg-vignette"></div>
+  <div class="bg-glow"></div>
+  <div class="side-bar"></div>
+  <div class="top-bar"></div>
+  <div class="corner-tl"></div>
+  <div class="corner-br"></div>
+
+  <!-- LOGO -->
+  <div class="post-logo">
+    <div class="logo-mark">A</div>
+    <div class="logo-text-wrap">
+      <div class="logo-name">AION</div>
+      <div class="logo-sub">Automações B2B</div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status-badge">
+    <div class="status-dot"></div>
+    <div class="status-text" id="post-status">INSIGHT</div>
+  </div>
+
+  <!-- NÚMERO FANTASMA -->
+  <div class="ghost-num" id="post-ghostnum">01</div>
+
+  <!-- DIVISÓRIA -->
+  <div class="divider-line"></div>
+
+  <!-- BODY -->
+  <div class="post-body">
+    <div class="category-tag">
+      <span id="post-category">Automação</span>
+    </div>
+    <div class="post-headline" id="post-headline">
+      Marketing<br>Manual:<br><span class="accent" id="post-accent-word">Sangria</span><br><span class="accent2" id="post-accent2-word">de Receita.</span>
+    </div>
+    <div class="post-subtext" id="post-subtext">
+      Cada tarefa repetitiva que você faz manualmente custa mais do que parece — em tempo, foco e dinheiro.
+    </div>
+  </div>
+
+  <!-- DATA STRIP -->
+  <div class="data-strip">
+    <div class="data-item">
+      <div class="data-key">Economia</div>
+      <div class="data-val" id="data1-val">20h/sem</div>
+    </div>
+    <div class="data-item">
+      <div class="data-key">ROI médio</div>
+      <div class="data-val" id="data2-val">3.2×</div>
+    </div>
+    <div class="data-item">
+      <div class="data-key">Setup</div>
+      <div class="data-val" id="data3-val">30 dias</div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ -->
+  <div class="post-footer">
+    <div class="footer-tagline">menos processo. mais resultado.</div>
+    <div class="footer-handle" id="post-handle">@aion.automacoes</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ PAINEL DE CONTROLE ══ -->
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-dot"></div>
+    <span>// editor de conteúdo</span>
+  </div>
+  <div class="panel-body">
+
+    <div>
+      <label>Variante de cor do acento</label>
+      <div class="variants-row">
+        <button class="var-btn active" onclick="setVariant('purple', this)">Roxo</button>
+        <button class="var-btn" onclick="setVariant('teal', this)">Teal</button>
+        <button class="var-btn" onclick="setVariant('mixed', this)">Misto</button>
+      </div>
+    </div>
+
+    <div>
+      <label>Headline (use | para quebra)</label>
+      <textarea id="inp-headline" rows="3">Marketing|Manual:|Sangria|de Receita.</textarea>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Linha destaque 1 (cor 1)</label>
+        <input type="text" id="inp-accent1" value="Sangria">
+      </div>
+      <div>
+        <label>Linha destaque 2 (cor 2)</label>
+        <input type="text" id="inp-accent2" value="de Receita.">
+      </div>
+    </div>
+
+    <div>
+      <label>Subtexto</label>
+      <textarea id="inp-sub" rows="2">Cada tarefa repetitiva que você faz manualmente custa mais do que parece — em tempo, foco e dinheiro.</textarea>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Categoria / badge</label>
+        <input type="text" id="inp-category" value="Automação">
+      </div>
+      <div>
+        <label>Status badge</label>
+        <input type="text" id="inp-status" value="INSIGHT">
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div>
+        <label>Dado 1</label>
+        <input type="text" id="inp-d1" value="20h/sem">
+      </div>
+      <div>
+        <label>Dado 2</label>
+        <input type="text" id="inp-d2" value="3.2×">
+      </div>
+      <div>
+        <label>Dado 3</label>
+        <input type="text" id="inp-d3" value="30 dias">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Número fantasma</label>
+        <input type="text" id="inp-ghostnum" value="01">
+      </div>
+      <div>
+        <label>Handle</label>
+        <input type="text" id="inp-handle" value="@aion.automacoes">
+      </div>
+    </div>
+
+    <button class="btn-run" onclick="update()">→ ATUALIZAR PREVIEW</button>
+  </div>
+</div>
+
+<!-- ══ JSON OUTPUT ══ -->
+<div class="json-panel">
+  <div class="json-header">
+    <span>// json → n8n APITemplate overrides</span>
+    <button class="btn-copy" onclick="copyJson()">COPIAR</button>
+  </div>
+  <pre id="json-out"></pre>
+</div>
+
+<script>
+let currentVariant = 'purple';
+
+const VARIANTS = {
+  purple: { c1: '#635bff', c2: '#635bff' },
+  teal:   { c1: '#00e5c0', c2: '#00e5c0' },
+  mixed:  { c1: '#635bff', c2: '#00e5c0' }
+};
+
+function setVariant(v, btn) {
+  currentVariant = v;
+  document.querySelectorAll('.var-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyVariant();
+}
+
+function applyVariant() {
+  const { c1, c2 } = VARIANTS[currentVariant];
+  const a1 = document.getElementById('post-accent-word');
+  const a2 = document.getElementById('post-accent2-word');
+  if (a1) a1.style.color = c1;
+  if (a2) a2.style.color = c2;
+}
+
+function update() {
+  const rawHeadline = document.getElementById('inp-headline').value;
+  const accent1 = document.getElementById('inp-accent1').value.trim();
+  const accent2 = document.getElementById('inp-accent2').value.trim();
+  const sub = document.getElementById('inp-sub').value.trim();
+  const category = document.getElementById('inp-category').value.trim();
+  const status = document.getElementById('inp-status').value.trim();
+  const d1 = document.getElementById('inp-d1').value.trim();
+  const d2 = document.getElementById('inp-d2').value.trim();
+  const d3 = document.getElementById('inp-d3').value.trim();
+  const ghostnum = document.getElementById('inp-ghostnum').value.trim();
+  const handle = document.getElementById('inp-handle').value.trim();
+  const { c1, c2 } = VARIANTS[currentVariant];
+
+  // Build headline HTML
+  const lines = rawHeadline.split('|').map(l => l.trim()).filter(Boolean);
+  const headlineHtml = lines.map(line => {
+    if (line === accent1) return `<span class="accent" id="post-accent-word" style="color:${c1}">${esc(line)}</span>`;
+    if (line === accent2) return `<span class="accent2" id="post-accent2-word" style="color:${c2}">${esc(line)}</span>`;
+    return esc(line);
+  }).join('<br>');
+
+  document.getElementById('post-headline').innerHTML = headlineHtml;
+  document.getElementById('post-subtext').textContent = sub;
+  document.getElementById('post-category').textContent = category;
+  document.getElementById('post-status').textContent = status;
+  document.getElementById('data1-val').textContent = d1;
+  document.getElementById('data2-val').textContent = d2;
+  document.getElementById('data3-val').textContent = d3;
+  document.getElementById('post-ghostnum').textContent = ghostnum;
+  document.getElementById('post-handle').textContent = handle;
+
+  renderJson({ rawHeadline, accent1, accent2, sub, category, status, d1, d2, d3, ghostnum, handle });
+}
+
+function renderJson(d) {
+  const obj = {
+    headline: d.rawHeadline.replace(/\|/g, '\n').trim(),
+    accent_word_1: d.accent1,
+    accent_word_2: d.accent2,
+    subtext: d.sub,
+    category: d.category,
+    status_badge: d.status,
+    data_value_1: d.d1,
+    data_value_2: d.d2,
+    data_value_3: d.d3,
+    post_number: d.ghostnum,
+    handle: d.handle,
+    color_variant: currentVariant
+  };
+  document.getElementById('json-out').textContent = JSON.stringify(obj, null, 2);
+}
+
+function copyJson() {
+  const t = document.getElementById('json-out').textContent;
+  navigator.clipboard.writeText(t).then(() => {
+    const b = document.querySelector('.btn-copy');
+    b.textContent = 'COPIADO ✓';
+    setTimeout(() => b.textContent = 'COPIAR', 2000);
+  });
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Init
+renderJson({
+  rawHeadline: 'Marketing|Manual:|Sangria|de Receita.',
+  accent1: 'Sangria', accent2: 'de Receita.',
+  sub: 'Cada tarefa repetitiva que você faz manualmente custa mais do que parece — em tempo, foco e dinheiro.',
+  category: 'Automação', status: 'INSIGHT',
+  d1: '20h/sem', d2: '3.2×', d3: '30 dias',
+  ghostnum: '01', handle: '@aion.automacoes'
+});
+</script>
+</body>
+</html>
