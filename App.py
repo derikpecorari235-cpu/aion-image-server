@@ -41,7 +41,7 @@ def gerar_imagem():
             "--no-sandbox", # Regra obrigatória para o Chrome rodar no Linux
             "--disable-dev-shm-usage", # Evita estouro de memória no servidor
             "--hide-scrollbars",
-            "--window-size=1080,1080",
+            "--window-size=1080,1350",
             f"--screenshot={output_image}",
             f"file:///{temp_html_path}"
         ]
